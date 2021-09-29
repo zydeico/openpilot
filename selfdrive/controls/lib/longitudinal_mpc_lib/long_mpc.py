@@ -3,10 +3,9 @@ import os
 import numpy as np
 
 from common.realtime import sec_since_boot
-from common.numpy_fast import clip, interp
+from common.numpy_fast import interp
 from selfdrive.swaglog import cloudlog
 from selfdrive.modeld.constants import index_function
-from selfdrive.controls.lib.radar_helpers import _LEAD_ACCEL_TAU
 
 if __name__ == '__main__':  # generating code
   from pyextra.acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
@@ -265,48 +264,37 @@ class LongitudinalMpc:
       self.x0[1] = v
       self.x0[2] = a
 
-  @staticmethod
-  def extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau):
-    a_lead_traj = a_lead * np.exp(-a_lead_tau * (T_IDXS**2)/2.)
-    v_lead_traj = np.clip(v_lead + np.cumsum(T_DIFFS * a_lead_traj), 0.0, 1e8)
-    x_lead_traj = x_lead + np.cumsum(T_DIFFS * v_lead_traj)
-    lead_xv = np.column_stack((x_lead_traj, v_lead_traj))
-    return lead_xv
-
   def process_lead(self, lead):
     v_ego = self.x0[1]
-    if lead is not None and lead.status:
-      x_lead = lead.dRel
-      v_lead = lead.vLead
-      a_lead = lead.aLeadK
-      a_lead_tau = lead.aLeadTau
+    if lead is not None and lead.prob > 0.5:
+      x_lead = np.interp(T_IDXS, lead.t, lead.x)
+      v_lead = np.interp(T_IDXS, lead.t, lead.v)
     else:
-      # Fake a fast lead car, so mpc can keep running in the same mode
-      x_lead = 50.0
-      v_lead = v_ego + 10.0
-      a_lead = 0.0
-      a_lead_tau = _LEAD_ACCEL_TAU
-
-    # MPC will not converge if immediate crash is expected
-    # Clip lead distance to what is still possible to brake for
-    min_x_lead = ((v_ego + v_lead)/2) * (v_ego - v_lead) / (-MIN_ACCEL * 2)
-    x_lead = clip(x_lead, min_x_lead, 1e8)
-    v_lead = clip(v_lead, 0.0, 1e8)
-    a_lead = clip(a_lead, -10., 5.)
-    lead_xv = self.extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau)
-    return lead_xv
+      v_lead = v_ego + 10.0 * np.ones(N+1)
+      x_lead = 50.0 + v_lead[0] * T_IDXS
+    return np.column_stack([x_lead, v_lead])
 
   def set_accel_limits(self, min_a, max_a):
     self.cruise_min_a = min_a
     self.cruise_max_a = max_a
 
-  def update(self, carstate, radarstate, v_cruise, prev_accel_constraint=False):
+  def update(self, carstate, model, v_cruise, prev_accel_constraint=False):
     v_ego = self.x0[1]
     a_ego = self.x0[2]
-    self.status = radarstate.leadOne.status or radarstate.leadTwo.status
+    if len(model.leadsV3) > 1:
+      lead_0 = model.leadsV3[0]
+      lead_1 = model.leadsV3[1]
+      lead_0_prob = lead_0.prob
+      lead_1_prob = lead_1.prob
+    else:
+      lead_0 = None
+      lead_1 = None
+      lead_0_prob = 0.0
+      lead_1_prob = 0.0
+    self.status = lead_0_prob > .5 or lead_1_prob > .5
 
-    lead_xv_0 = self.process_lead(radarstate.leadOne)
-    lead_xv_1 = self.process_lead(radarstate.leadTwo)
+    lead_xv_0 = self.process_lead(lead_0)
+    lead_xv_1 = self.process_lead(lead_1)
 
     # set accel limits in params
     self.params[:,0] = interp(float(self.status), [0.0, 1.0], [self.cruise_min_a, MIN_ACCEL])
@@ -337,7 +325,7 @@ class LongitudinalMpc:
 
     self.run()
     if (np.any(lead_xv_0[:,0] - self.x_sol[:,0] < CRASH_DISTANCE) and
-            radarstate.leadOne.modelProb > 0.9):
+            lead_0_prob > 0.9):
       self.crash_cnt += 1
     else:
       self.crash_cnt = 0
