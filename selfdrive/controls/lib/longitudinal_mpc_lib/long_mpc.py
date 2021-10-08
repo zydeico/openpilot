@@ -35,7 +35,8 @@ V_EGO_COST = 0.
 A_EGO_COST = 0.
 J_EGO_COST = 5.0
 A_CHANGE_COST = 200.
-DANGER_ZONE_COST = 100.
+J_EGO_COST = 5.
+DANGER_ZONE_COST = 10.
 CRASH_DISTANCE = .5
 LIMIT_COST = 1e6
 ACADOS_SOLVER_TYPE = 'SQP_RTI'
@@ -232,11 +233,14 @@ class LongitudinalMpc:
       self.set_weights_for_lead_policy(prev_accel_constraint)
 
   def set_weights_for_lead_policy(self, prev_accel_constraint=True):
-    a_change_cost = A_CHANGE_COST if prev_accel_constraint else 0
-    W = np.asfortranarray(np.diag([X_EGO_OBSTACLE_COST, X_EGO_COST, V_EGO_COST, A_EGO_COST, a_change_cost, J_EGO_COST]))
+    a_change_cost = .1 if prev_accel_constraint else 0
+    W = np.diag([0., 10., 1., 10., .1, 1.])
     for i in range(N):
+<<<<<<< HEAD
       # reduce the cost on (a-a_prev) later in the horizon.
       W[4,4] = a_change_cost * np.interp(T_IDXS[i], [0.0, 1.0, 2.0], [1.0, 1.0, 0.0])
+=======
+>>>>>>> bdc74e867 (respect lead and cruise as limits)
       self.solver.cost_set(i, 'W', W)
     # Setting the slice without the copy make the array not contiguous,
     # causing issues with the C interface.
@@ -303,15 +307,20 @@ class LongitudinalMpc:
     self.cruise_min_a = min_a
     self.cruise_max_a = max_a
 
-  def update(self, carstate, radarstate, v_cruise):
+  def update(self, carstate, radarstate, v_cruise, x, v, a):
     v_ego = self.x0[1]
+    self.yref[:,1] = x
+    self.yref[:,2] = v
+    self.yref[:,3] = a
+    self.solver.cost_set_slice(0, N, "yref", self.yref[:N], api='old')
+    self.solver.set(N, "yref", self.yref[N][:COST_E_DIM])
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
     lead_xv_0 = self.process_lead(radarstate.leadOne)
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
 
     # set accel limits in params
-    self.params[:,0] = interp(float(self.status), [0.0, 1.0], [self.cruise_min_a, MIN_ACCEL])
+    self.params[:,0] = self.cruise_min_a
     self.params[:,1] = self.cruise_max_a
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
