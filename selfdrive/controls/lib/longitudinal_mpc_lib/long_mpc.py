@@ -234,7 +234,7 @@ class LongitudinalMpc:
 
   def set_weights_for_lead_policy(self, prev_accel_constraint=True):
     a_change_cost = .1 if prev_accel_constraint else 0
-    W = np.diag([0., .01, .0, 10., .1, 1.])
+    W = np.diag([0., .03, .0, 10., 0.0, 1.])
     for i in range(N):
 <<<<<<< HEAD
       # reduce the cost on (a-a_prev) later in the horizon.
