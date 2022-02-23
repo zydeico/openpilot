@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from common.realtime import sec_since_boot
-from common.numpy_fast import interp, clip
+from common.numpy_fast import clip
 from selfdrive.swaglog import cloudlog
 from selfdrive.modeld.constants import index_function
 from selfdrive.controls.lib.radar_helpers import _LEAD_ACCEL_TAU
@@ -236,11 +236,7 @@ class LongitudinalMpc:
     a_change_cost = .1 if prev_accel_constraint else 0
     W = np.diag([0., .03, .0, 10., 0.0, 1.])
     for i in range(N):
-<<<<<<< HEAD
-      # reduce the cost on (a-a_prev) later in the horizon.
       W[4,4] = a_change_cost * np.interp(T_IDXS[i], [0.0, 1.0, 2.0], [1.0, 1.0, 0.0])
-=======
->>>>>>> bdc74e867 (respect lead and cruise as limits)
       self.solver.cost_set(i, 'W', W)
     self.solver.cost_set(N, 'W', np.copy(W[:COST_E_DIM, :COST_E_DIM]))
 
