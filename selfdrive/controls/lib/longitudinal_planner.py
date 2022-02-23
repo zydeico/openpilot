@@ -12,7 +12,7 @@ from selfdrive.controls.lib.longcontrol import LongCtrlState
 from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N
-from selfdrive.swaglog import cloudlog
+#from selfdrive.swaglog import cloudlog
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -93,7 +93,6 @@ class Planner:
     self.mpc.set_weights(prev_accel_constraint)
     self.mpc.set_accel_limits(-3.5, 2.)
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
-    self.mpc.set_cur_state(self.v_desired, self.a_desired)
     if (len(sm['modelV2'].position.x) == 33 and
          len(sm['modelV2'].velocity.x) == 33 and
           len(sm['modelV2'].acceleration.x) == 33):
