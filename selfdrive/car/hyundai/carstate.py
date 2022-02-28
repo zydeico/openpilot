@@ -54,13 +54,15 @@ class CarState(CarStateBase):
     else:  # preferred and elect gear methods use same definition
       self.shifter_values = can_define.dv["LVR12"]["CF_Lvr_Gear"]
 
+    self.brake_error = False
+    self.park_brake = False
 
   def update_ev6(self, cp, cp_cam):
     ret = car.CarState.new_message()
 
     ret.gas = cp.vl["ACCELERATOR"]["ACCELERATOR_PEDAL"]
     ret.gasPressed = ret.gas > 1e-3
-    ret.brakePressed = cp.vl["BRAKE"]["BRAKE_PRESSED"]
+    ret.brakePressed = cp.vl["BRAKE"]["BRAKE_PRESSED"] == 1
 
     ret.doorOpen = cp.vl["DOORS_SEATBELTS"]["DRIVER_DOOR_OPEN"] == 1
     ret.seatbeltUnlatched = cp.vl["DOORS_SEATBELTS"]["DRIVER_SEATBELT_LATCHED"] == 0
@@ -82,6 +84,8 @@ class CarState(CarStateBase):
 
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl["BLINKERS"]["LEFT_LAMP"],
                                                                       cp.vl["BLINKERS"]["RIGHT_LAMP"])
+
+    return ret
 
   def update(self, cp, cp_cam):
     if self.CP.carFingerprint in HDA2_CAR:
@@ -344,5 +348,8 @@ class CarState(CarStateBase):
     checks = [
       ("LKAS11", 100)
     ]
+
+    if CP.carFingerprint in HDA2_CAR:
+      signals, checks = [], []
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 2)
