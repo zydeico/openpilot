@@ -109,6 +109,11 @@ def main() -> NoReturn:
           cloudlog.info(f"Resetting panda {panda.get_usb_serial()}")
           panda.reset()
 
+        if panda.has_canfd():
+          for bus in range(3):
+            panda.set_can_speed_kbps(bus, 500)
+            panda.set_can_data_speed_kbps(bus, 2000)
+
       # sort pandas to have deterministic order
       pandas.sort(key=cmp_to_key(panda_sort_cmp))
       panda_serials = list(map(lambda p: p.get_usb_serial(), pandas))

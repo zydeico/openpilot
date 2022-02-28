@@ -41,13 +41,17 @@ class CarController():
     self.packer = CANPacker(dbc_name)
 
     self.apply_steer_last = 0
-    self.car_fingerprint = CP.carFingerprint
+    self.CP = CP
     self.steer_rate_limited = False
     self.last_resume_frame = 0
     self.accel = 0
 
   def update(self, c, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert, hud_speed,
              left_lane, right_lane, left_lane_depart, right_lane_depart):
+
+    if self.CP.carFingerprint == CAR.KIA_EV6:
+      return actuators.copy(), []
+
     # Steering Torque
     new_steer = int(round(actuators.steer * self.p.STEER_MAX))
     apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.p)
@@ -62,7 +66,7 @@ class CarController():
     self.apply_steer_last = apply_steer
 
     sys_warning, sys_state, left_lane_warning, right_lane_warning = \
-      process_hud_alert(enabled, self.car_fingerprint, visual_alert,
+      process_hud_alert(enabled, self.CP.carFingerprint, visual_alert,
                         left_lane, right_lane, left_lane_depart, right_lane_depart)
 
     can_sends = []
@@ -72,7 +76,7 @@ class CarController():
       if (frame % 100) == 0:
         can_sends.append([0x7D0, 0, b"\x02\x3E\x80\x00\x00\x00\x00\x00", 0])
 
-    can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
+    can_sends.append(create_lkas11(self.packer, frame, self.CP.carFingerprint, apply_steer, lkas_active,
                                    CS.lkas11, sys_warning, sys_state, enabled,
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning))
@@ -104,7 +108,7 @@ class CarController():
       self.accel = accel
 
     # 20 Hz LFA MFA message
-    if frame % 5 == 0 and self.car_fingerprint in (CAR.SONATA, CAR.PALISADE, CAR.IONIQ, CAR.KIA_NIRO_EV, CAR.KIA_NIRO_HEV_2021,
+    if frame % 5 == 0 and self.CP.carFingerprint in (CAR.SONATA, CAR.PALISADE, CAR.IONIQ, CAR.KIA_NIRO_EV, CAR.KIA_NIRO_HEV_2021,
                                                    CAR.IONIQ_EV_2020, CAR.IONIQ_PHEV, CAR.KIA_CEED, CAR.KIA_SELTOS, CAR.KONA_EV,
                                                    CAR.ELANTRA_2021, CAR.ELANTRA_HEV_2021, CAR.SONATA_HYBRID, CAR.KONA_HEV, CAR.SANTA_FE_2022,
                                                    CAR.KIA_K5_2021, CAR.IONIQ_HEV_2022, CAR.SANTA_FE_HEV_2022, CAR.GENESIS_G70_2020, CAR.SANTA_FE_PHEV_2022):

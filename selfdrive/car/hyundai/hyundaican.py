@@ -1,7 +1,15 @@
 import crcmod
+import struct
+
 from selfdrive.car.hyundai.values import CAR, CHECKSUM
 
 hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
+
+def egmp_crc(msg):
+  xor_out = {8: 0x5f29, 16: 0x041d, 24: 0x819d, 32: 0x9f5b}[len(msg.dat)]
+  fun = crcmod.mkCrcFun(0x11021, rev=False, initCrc=xor_out, xorOut=xor_out)
+  dat = msg.dat[2:] + struct.pack('<H', msg.address)
+  return struct.pack('<H', fun(dat))
 
 def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
                   lkas11, sys_warning, sys_state, enabled,
