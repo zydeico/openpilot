@@ -1,6 +1,6 @@
 #pragma OPENCL EXTENSION cl_khr_fp16 : enable
 
-const half black_level = 42.0;
+const half black_level = 168.0;
 
 const __constant half3 color_correction[3] = {
   // post wb CCM
