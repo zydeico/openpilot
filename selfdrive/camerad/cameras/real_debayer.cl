@@ -215,6 +215,9 @@ __kernel void debayer10(const __global uchar * in,
     }
   }
 
+  // digital gain
+  rgb *= 4;
+
   rgb = clamp(0.0h, 1.0h, rgb);
   rgb = color_correct(rgb);
   rgb = srgb_gamma(rgb);
