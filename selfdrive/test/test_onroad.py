@@ -227,7 +227,7 @@ class TestOnroad(unittest.TestCase):
     result += "----------------- Model Timing -----------------\n"
     result += "------------------------------------------------\n"
     # TODO: this went up when plannerd cpu usage increased, why?
-    cfgs = [("driverState", 0.028, 0.026)]
+    cfgs = [("driverState", 0.040, 0.035)]
     if EON:
       cfgs += [("modelV2", 0.045, 0.04)]
     else:
