@@ -1,6 +1,6 @@
 #pragma OPENCL EXTENSION cl_khr_fp16 : enable
 
-const half black_level = 168.0;
+const uint black_level = 168;
 
 const __constant half3 color_correction[3] = {
   // post wb CCM
@@ -35,8 +35,15 @@ half3 color_correct(half3 rgb) {
   ret.x = mf(ret.x, cpx);
   ret.y = mf(ret.y, cpx);
   ret.z = mf(ret.z, cpx);
-  ret = clamp(0.0h, 255.0h, ret*255.0h);
+  ret = clamp(0.0h, 1.0h, ret);
   return ret;
+}
+
+half3 srgb_gamma(half3 p) {
+  // go all out and add an sRGB gamma curve
+  const half3 ph = (1.0h + 0.055h)*pow(p, 1/2.4h) - 0.055h;
+	const half3 pl = p*12.92h;
+	return select(ph, pl, islessequal(p, 0.0031308h));
 }
 
 half val_from_10(const uchar * source, int gx, int gy) {
@@ -45,12 +52,21 @@ half val_from_10(const uchar * source, int gx, int gy) {
   int offset = gx % 2;
   uint major = (uint)source[start + offset] << 4;
   uint minor = (source[start + 2] >> (4 * offset)) & 0xf;
-  half pv = (half)(major + minor);
+  uint combined = major + minor;
+
+  // decompress - Legacy kneepoints
+  uint decompressed;
+  if (combined > 3040) {
+    decompressed = (combined - 3040) * 1024 + 65536;
+  } else if (combined > 2048) {
+    decompressed = (combined - 2048) * 64 + 2048;
+  } else {
+    decompressed = combined;
+  }
 
   // normalize
-  pv = max(0.0h, pv - black_level);
-  // pv *= 0.00101833h; // /= (1024.0f - black_level);
-  pv *= 0.0002545824847250509; // /= (4096.0f - black_level);
+  half pv = max(0.0f, decompressed - (float)black_level) / (1048575.0f - (float)black_level);
+  pv = clamp(0.0h, 1.0h, pv);
 
   // correct vignetting
   if (CAM_NUM == 1) { // fcamera
@@ -201,6 +217,8 @@ __kernel void debayer10(const __global uchar * in,
 
   rgb = clamp(0.0h, 1.0h, rgb);
   rgb = color_correct(rgb);
+  rgb = srgb_gamma(rgb);
+  rgb = clamp(0.0h, 255.0h, rgb * 255.0h);
 
   out[out_idx + 0] = (uchar)(rgb.z);
   out[out_idx + 1] = (uchar)(rgb.y);

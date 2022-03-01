@@ -46,7 +46,7 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
 
   // Readout Settings
   {0x31AE, 0x0204}, // SERIAL_FORMAT, 4-lane MIPI
-  {0x31AC, 0x0C0C}, // DATA_FORMAT_BITS, 12 -> 12
+  {0x31AC, 0x140C}, // DATA_FORMAT_BITS, 20 -> 12
   {0x3342, 0x122B}, // MIPI_F1_PDT_EDT
   {0x3346, 0x122B}, // MIPI_F2_PDT_EDT
   {0x334A, 0x122B}, // MIPI_F3_PDT_EDT
@@ -82,8 +82,13 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   {0x321E, 0x098E}, // FINE_INTEGRATION_TIME2 (A)
   {0x3220, 0x098E}, // FINE_INTEGRATION_TIME2 (B)
 
-  {0x31D0, 0x0000}, // COMPANDING, no good in 10 bit?
-  {0x33DA, 0x0000}, // COMPANDING
+  {0x31D0, 0x0001}, // COMPANDING enabled
+  {0x33DA, 0x0001}, // OC_LUT_CONTROL - OC_LEGACY_COMPANDING 
+
+  // TODO: use more kneepoints
+  // {0x33DA, 0x0002}, // OC_LUT_CONTROL - OC_SET_LUT_DEFAULT
+  // {0x31AC, 0x140C}, // Write format again to load kneepoints
+
   {0x318E, 0x0200}, // PRE_HDR_GAIN_EN
 
   // DLO Settings
