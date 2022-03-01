@@ -920,10 +920,7 @@ void handle_camera_event(CameraState *s, void *evdat) {
 static void set_camera_exposure(CameraState *s, float grey_frac) {
   const float dt = 0.05;
 
-  const float ts_grey = 10.0;
   const float ts_ev = 0.05;
-
-  const float k_grey = (dt / ts_grey) / (1.0 + dt / ts_grey);
   const float k_ev = (dt / ts_ev) / (1.0 + dt / ts_ev);
 
   // It takes 3 frames for the commanded exposure settings to take effect. The first frame is already started by the time
@@ -932,10 +929,7 @@ static void set_camera_exposure(CameraState *s, float grey_frac) {
   // TODO: Lower latency to 2 frames, by using the histogram outputed by the sensor we can do AE before the debayering is complete
 
   const float cur_ev = s->cur_ev[s->buf.cur_frame_data.frame_id % 3];
-
-  // Scale target grey between 0.1 and 0.4 depending on lighting conditions
-  float new_target_grey = std::clamp(0.4 - 0.3 * log2(1.0 + cur_ev) / log2(6000.0), 0.1, 0.4);
-  float target_grey = (1.0 - k_grey) * s->target_grey_fraction + k_grey * new_target_grey;
+  float target_grey = 0.3;
 
   float desired_ev = std::clamp(cur_ev * target_grey / grey_frac, s->min_ev, s->max_ev);
   float k = (1.0 - k_ev) / 3.0;
@@ -945,14 +939,7 @@ static void set_camera_exposure(CameraState *s, float grey_frac) {
   int new_g = 0;
   int new_t = 0;
 
-  // Hysteresis around high conversion gain
-  // We usually want this on since it results in lower noise, but turn off in very bright day scenes
-  bool enable_dc_gain = s->dc_gain_enabled;
-  if (!enable_dc_gain && target_grey < 0.2) {
-    enable_dc_gain = true;
-  } else if (enable_dc_gain && target_grey > 0.3) {
-    enable_dc_gain = false;
-  }
+  bool enable_dc_gain = true;
 
   // Simple brute force optimizer to choose sensor parameters
   // to reach desired EV
