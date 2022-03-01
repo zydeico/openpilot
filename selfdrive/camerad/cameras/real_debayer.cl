@@ -49,7 +49,8 @@ half val_from_10(const uchar * source, int gx, int gy) {
 
   // normalize
   pv = max(0.0h, pv - black_level);
-  pv *= 0.00101833h; // /= (4096.0f - black_level);
+  // pv *= 0.00101833h; // /= (1024.0f - black_level);
+  pv *= 0.0002545824847250509; // /= (4096.0f - black_level);
 
   // correct vignetting
   if (CAM_NUM == 1) { // fcamera
