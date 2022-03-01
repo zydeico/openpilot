@@ -28,7 +28,7 @@ const size_t FRAME_WIDTH = 1928;
 const size_t FRAME_HEIGHT = 1208;
 
 // const size_t FRAME_STRIDE = 2416;  // for 10 bit output. 1928 * 10 / 8 + 6. Why 6?
-const size_t FRAME_STRIDE = 2898;  // for 12 bit output. 1928 * 12 / 8 + 6
+const size_t FRAME_STRIDE = 2896;  // for 12 bit output. 1928 * 12 / 8 + 4. Why 4?
 
 const int MIPI_SETTLE_CNT = 33;  // Calculated by camera_freqs.py
 
