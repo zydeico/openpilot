@@ -40,16 +40,16 @@ half3 color_correct(half3 rgb) {
 }
 
 half val_from_10(const uchar * source, int gx, int gy) {
-  // parse 10bit
-  int start = gy * FRAME_STRIDE + (5 * (gx / 4));
-  int offset = gx % 4;
-  uint major = (uint)source[start + offset] << 2;
-  uint minor = (source[start + 4] >> (2 * offset)) & 3;
+  // parse 12bit
+  int start = gy * FRAME_STRIDE + (3 * (gx / 2));
+  int offset = gx % 2;
+  uint major = (uint)source[start + offset] << 4;
+  uint minor = (source[start + 2] >> (4 * offset)) & 0xf;
   half pv = (half)(major + minor);
 
   // normalize
   pv = max(0.0h, pv - black_level);
-  pv *= 0.00101833h; // /= (1024.0f - black_level);
+  pv *= 0.00101833h; // /= (4096.0f - black_level);
 
   // correct vignetting
   if (CAM_NUM == 1) { // fcamera
