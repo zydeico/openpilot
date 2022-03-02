@@ -610,10 +610,7 @@ static void camera_open(CameraState *s) {
       .lane_cfg = 0x3210,
 
       .vc = 0x0,
-      .dt = 0x2B,  //CSI_RAW10
-
-      // TODO: Selection CSI_RAW12 breaks things. Seems to work fine without
-      // .dt = 0x2C, //CSI_RAW12
+      .dt = 0x2C, //CSI_RAW12
 
       .format = CAM_FORMAT_MIPI_RAW_12,
 
