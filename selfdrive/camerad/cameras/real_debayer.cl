@@ -47,19 +47,20 @@ half3 srgb_gamma(half3 p) {
 }
 
 half val_from_10(const uchar * source, int gx, int gy) {
-  // parse 12bit
-  int start = gy * FRAME_STRIDE + (3 * (gx / 2));
-  int offset = gx % 2;
-  uint major = (uint)source[start + offset] << 4;
-  uint minor = (source[start + 2] >> (4 * offset)) & 0xf;
+  // parse 16bit
+  int start = gy * FRAME_STRIDE + 2 * gx;
+  uint major = (uint)source[start] << 8;
+  uint minor = source[start + 1];
   uint combined = major + minor;
 
   // decompress - Legacy kneepoints
   uint decompressed;
-  if (combined > 3040) {
-    decompressed = (combined - 3040) * 1024 + 65536;
-  } else if (combined > 2048) {
-    decompressed = (combined - 2048) * 64 + 2048;
+  if (combined > 55296) {
+    decompressed = (combined - 55296) * 64 + 524288;
+  } else if (combined > 40960) {
+    decompressed = (combined - 40960) * 32 + 65536;
+  } else if (combined > 16384) {
+    decompressed = (combined - 16384) * 2 + 16384;
   } else {
     decompressed = combined;
   }
