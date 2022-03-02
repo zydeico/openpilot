@@ -24,7 +24,7 @@
 
 extern ExitHandler do_exit;
 
-const size_t FRAME_WIDTH = 1928;
+const size_t FRAME_WIDTH = 1928*2;
 const size_t FRAME_HEIGHT = 1208;
 
 // const size_t FRAME_STRIDE = 2416;  // for 10 bit output. 1928 * 10 / 8 + 6 (alignment)
@@ -467,7 +467,7 @@ void config_isp(struct CameraState *s, int io_mem_handle, int fence, int request
 		 .h_init = 0x0,
 		 .v_init = 0x0,
 		};
-    io_cfg[0].format = CAM_FORMAT_MIPI_RAW_16;             // CAM_FORMAT_UBWC_TP10 for YUV
+    io_cfg[0].format = CAM_FORMAT_MIPI_RAW_8;             // CAM_FORMAT_UBWC_TP10 for YUV
     io_cfg[0].color_space = CAM_COLOR_SPACE_BASE;          // CAM_COLOR_SPACE_BT601_FULL for YUV
     io_cfg[0].color_pattern = 0x5;                         // 0x0 for YUV
     io_cfg[0].bpp = 16;
@@ -611,12 +611,14 @@ static void camera_open(CameraState *s) {
       .lane_cfg = 0x3210,
 
       .vc = 0x0,
-      .dt = 0x2B,  //CSI_RAW10
+      // .dt = 0x2B,  //CSI_RAW10
 
       // TODO: Selection CSI_RAW12 breaks things. Seems to work fine without
       // .dt = 0x2C, //CSI_RAW12
 
-      .format = CAM_FORMAT_MIPI_RAW_16,
+      .dt = 0x2A,  //CSI_RAW8
+
+      .format = CAM_FORMAT_MIPI_RAW_8,
 
       .test_pattern = 0x2,  // 0x3?
       .usage_type = 0x0,
@@ -642,7 +644,7 @@ static void camera_open(CameraState *s) {
       .num_out_res = 0x1,
       .data[0] = (struct cam_isp_out_port_info){
           .res_type = CAM_ISP_IFE_OUT_RES_RDI_0,
-          .format = CAM_FORMAT_MIPI_RAW_16,
+          .format = CAM_FORMAT_MIPI_RAW_8,
           .width = FRAME_WIDTH,
           .height = FRAME_HEIGHT,
           .comp_grp_id = 0x0, .split_point = 0x0, .secure_mode = 0x0,
