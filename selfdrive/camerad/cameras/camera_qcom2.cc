@@ -610,9 +610,12 @@ static void camera_open(CameraState *s) {
       .lane_cfg = 0x3210,
 
       .vc = 0x0,
-      // .dt = 0x2C; //CSI_RAW12
       .dt = 0x2B,  //CSI_RAW10
-      .format = CAM_FORMAT_MIPI_RAW_10,
+
+      // TODO: Selection CSI_RAW12 breaks things. Seems to work fine without
+      // .dt = 0x2C, //CSI_RAW12
+
+      .format = CAM_FORMAT_MIPI_RAW_12,
 
       .test_pattern = 0x2,  // 0x3?
       .usage_type = 0x0,
@@ -638,7 +641,7 @@ static void camera_open(CameraState *s) {
       .num_out_res = 0x1,
       .data[0] = (struct cam_isp_out_port_info){
           .res_type = CAM_ISP_IFE_OUT_RES_RDI_0,
-          .format = CAM_FORMAT_MIPI_RAW_10,
+          .format = CAM_FORMAT_MIPI_RAW_12,
           .width = FRAME_WIDTH,
           .height = FRAME_HEIGHT,
           .comp_grp_id = 0x0, .split_point = 0x0, .secure_mode = 0x0,
@@ -698,7 +701,9 @@ static void camera_open(CameraState *s) {
     csiphy_info->lane_cnt = 0x4;
     csiphy_info->secure_mode = 0x0;
     csiphy_info->settle_time = MIPI_SETTLE_CNT * 200000000ULL;
-    csiphy_info->data_rate = 48000000;  // Calculated by camera_freqs.py
+
+    // TODO: this doesn't seem to do anything. Was this supposed to be 480 MHz?
+    // csiphy_info->data_rate = 48000000;  // Calculated by camera_freqs.py
 
     int ret_ = device_config(s->csiphy_fd, s->session_handle, s->csiphy_dev_handle, cam_packet_handle);
     assert(ret_ == 0);
