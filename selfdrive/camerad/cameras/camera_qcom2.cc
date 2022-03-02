@@ -616,7 +616,7 @@ static void camera_open(CameraState *s) {
       // TODO: Selection CSI_RAW12 breaks things. Seems to work fine without
       // .dt = 0x2C, //CSI_RAW12
 
-      .format = CAM_FORMAT_MIPI_RAW_12,
+      .format = CAM_FORMAT_MIPI_RAW_16,
 
       .test_pattern = 0x2,  // 0x3?
       .usage_type = 0x0,
@@ -642,7 +642,7 @@ static void camera_open(CameraState *s) {
       .num_out_res = 0x1,
       .data[0] = (struct cam_isp_out_port_info){
           .res_type = CAM_ISP_IFE_OUT_RES_RDI_0,
-          .format = CAM_FORMAT_MIPI_RAW_12,
+          .format = CAM_FORMAT_MIPI_RAW_16,
           .width = FRAME_WIDTH,
           .height = FRAME_HEIGHT,
           .comp_grp_id = 0x0, .split_point = 0x0, .secure_mode = 0x0,
