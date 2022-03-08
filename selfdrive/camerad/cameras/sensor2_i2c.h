@@ -83,7 +83,7 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   {0x3220, 0x098E}, // FINE_INTEGRATION_TIME2 (B)
 
   {0x31D0, 0x0001}, // COMPANDING enabled
-  {0x33DA, 0x0001}, // OC_LUT_CONTROL - OC_LEGACY_COMPANDING 
+  {0x33DA, 0x0001}, // OC_LUT_CONTROL - OC_LEGACY_COMPANDING
 
   // TODO: use more kneepoints
   // {0x33DA, 0x0002}, // OC_LUT_CONTROL - OC_SET_LUT_DEFAULT
@@ -92,15 +92,20 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   {0x318E, 0x0200}, // PRE_HDR_GAIN_EN
 
   // DLO Settings
-  {0x3100, 0x4000}, // DLO_CONTROL0
-  {0x3280, 0x0CCC}, // T1 G1
-  {0x3282, 0x0CCC}, // T1 R
-  {0x3284, 0x0CCC}, // T1 B
-  {0x3286, 0x0CCC}, // T1 G2
-  {0x3288, 0x0FA0}, // T2 G1
-  {0x328A, 0x0FA0}, // T2 R
-  {0x328C, 0x0FA0}, // T2 B
-  {0x328E, 0x0FA0}, // T2 G2
+  // {0x3100, 0x4000}, // DLO_CONTROL0
+
+  // Noise filtering
+  {0x3190, 0x0000}, // Disable DLO noise filtering[14] and DLO[13]?
+
+  // {0x31A2, 0x0000}, // noise_dlo_dis_threshold
+  // {0x3280, 0x0CCC}, // T1 G1
+  // {0x3282, 0x0CCC}, // T1 R
+  // {0x3284, 0x0CCC}, // T1 B
+  // {0x3286, 0x0CCC}, // T1 G2
+  // {0x3288, 0x0FA0}, // T2 G1
+  // {0x328A, 0x0FA0}, // T2 R
+  // {0x328C, 0x0FA0}, // T2 B
+  // {0x328E, 0x0FA0}, // T2 G2
 
    // Initial Gains
   {0x3022, 0x0001}, // GROUPED_PARAMETER_HOLD_
