@@ -70,17 +70,11 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   {0x31E0, 0x0003},
 
   // HDR Settings
-  {0x3082, 0x0004}, // OPERATION_MODE_CTRL (A)
-  {0x3084, 0x0004}, // OPERATION_MODE_CTRL (B)
-
-  {0x3238, 0x0004}, // EXPOSURE_RATIO (A)
-  {0x323A, 0x0004}, // EXPOSURE_RATIO (B)
+  {0x3082, 0x0008}, // OPERATION_MODE_CTRL (A) (enable HDR + 3 exposures)
 
   {0x3014, 0x098E}, // FINE_INTEGRATION_TIME_ (A)
-  {0x3018, 0x098E}, // FINE_INTEGRATION_TIME_ (B)
-
   {0x321E, 0x098E}, // FINE_INTEGRATION_TIME2 (A)
-  {0x3220, 0x098E}, // FINE_INTEGRATION_TIME2 (B)
+  {0x3222, 0x098E}, // FINE_INTEGRATION_TIME3 (A)
 
   {0x31D0, 0x0001}, // COMPANDING enabled
   {0x33DA, 0x0001}, // OC_LUT_CONTROL - OC_LEGACY_COMPANDING
@@ -89,46 +83,40 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   // {0x33DA, 0x0002}, // OC_LUT_CONTROL - OC_SET_LUT_DEFAULT
   // {0x31AC, 0x140C}, // Write format again to load kneepoints
 
+  {0x3190, 0x0000}, // 
   {0x318E, 0x0200}, // PRE_HDR_GAIN_EN
+  {0x319E, 0x0000}, // s12_dlo_range?
 
   // DLO Settings
   // {0x3100, 0x4000}, // DLO_CONTROL0
 
-  // Noise filtering
-  {0x3190, 0x0000}, // Disable DLO noise filtering[14] and DLO[13]?
+  {0x31A2, 0x0000}, // noise_dlo_dis_threshold
 
-  // {0x31A2, 0x0000}, // noise_dlo_dis_threshold
-  // {0x3280, 0x0CCC}, // T1 G1
-  // {0x3282, 0x0CCC}, // T1 R
-  // {0x3284, 0x0CCC}, // T1 B
-  // {0x3286, 0x0CCC}, // T1 G2
-  // {0x3288, 0x0FA0}, // T2 G1
-  // {0x328A, 0x0FA0}, // T2 R
-  // {0x328C, 0x0FA0}, // T2 B
-  // {0x328E, 0x0FA0}, // T2 G2
+  {0x3280, 0x0fff}, // T1 G1
+  {0x3282, 0x0fff}, // T1 R
+  {0x3284, 0x0fff}, // T1 B
+  {0x3286, 0x0fff}, // T1 G2
 
-   // Initial Gains
-  {0x3022, 0x0001}, // GROUPED_PARAMETER_HOLD_
-  {0x3366, 0xFF77}, // ANALOG_GAIN (1x) (A)
-  {0x3368, 0xFF77}, // ANALOG_GAIN (1x) (B)
+  {0x3288, 0x0000}, // T2 G1
+  {0x328A, 0x0000}, // T2 R
+  {0x328C, 0x0000}, // T2 B
+  {0x328E, 0x0000}, // T2 G2
 
+  {0x3290, 0x0000}, // T3 G1
+  {0x3292, 0x0000}, // T3 R
+  {0x3294, 0x0000}, // T3 B
+  {0x3296, 0x0000}, // T3 G2
+
+  // {0x3060, 0xAAAA}, // ANALOG_COLOR_GAIN
   {0x3060, 0x3333}, // ANALOG_COLOR_GAIN
-
-  {0x3362, 0x0000}, // DC GAIN (A & B)
 
   {0x305A, 0x00F8}, // red gain (A)
   {0x3058, 0x0122}, // blue gain (A)
   {0x3056, 0x009A}, // g1 gain (A)
   {0x305C, 0x009A}, // g2 gain (A)
 
-  {0x30C0, 0x00F8}, // red gain (B)
-  {0x30BE, 0x0122}, // blue gain (B)
-  {0x30BC, 0x009A}, // g1 gain (B)
-  {0x30C2, 0x009A}, // g2 gain (B)
-
-  {0x3022, 0x0000}, // GROUPED_PARAMETER_HOLD_
-
-  // Initial Integration Time
-  {0x3012, 0x0005}, // (A)
-  {0x3016, 0x0005}, // (B)
+  {0x3012, 500},   // Integration time (A)
+  {0x3238, 0x0011}, // EXPOSURE_RATIO (A)
+  {0x3366, 0xF17D}, // ANALOG_GAIN (A) 0.25 - 1.0 - 4.0
+  {0x3362, 0x0001}, // DC GAIN (A - T1)
 };

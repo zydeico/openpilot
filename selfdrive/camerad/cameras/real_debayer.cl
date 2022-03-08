@@ -46,7 +46,7 @@ half3 srgb_gamma(half3 p) {
 	return select(ph, pl, islessequal(p, 0.0031308h));
 }
 
-half val_from_10(const uchar * source, int gx, int gy) {
+float val_from_10(const uchar * source, int gx, int gy) {
   // parse 12bit
   int start = gy * FRAME_STRIDE + (3 * (gx / 2));
   int offset = gx % 2;
@@ -65,8 +65,16 @@ half val_from_10(const uchar * source, int gx, int gy) {
   }
 
   // normalize
-  half pv = max(0.0f, decompressed - (float)black_level) / (1048575.0f - (float)black_level);
-  pv = clamp(0.0h, 1.0h, pv);
+  // half pv = max(0.0f, decompressed - (float)black_level) / (1048575.0f - (float)black_level);
+  float pv = max(0.0f, decompressed  / 1048575.0f);
+
+  // TODO: get from histogram
+  float lower = 0.00f;
+  float upper = 0.0039f * 1; 
+
+  // Scale 
+  pv = (pv - lower) / (upper - lower);
+  pv = clamp(0.0f, 1.0f, pv);
 
   // correct vignetting
   if (CAM_NUM == 1) { // fcamera
@@ -86,7 +94,7 @@ half val_from_10(const uchar * source, int gx, int gy) {
     pv = s * pv;
   }
 
-  pv = clamp(0.0h, 1.0h, pv);
+  pv = clamp(0.0f, 1.0f, pv);
   return pv;
 }
 
@@ -215,12 +223,9 @@ __kernel void debayer10(const __global uchar * in,
     }
   }
 
-  // digital gain
-  rgb *= 4;
-
   rgb = clamp(0.0h, 1.0h, rgb);
   rgb = color_correct(rgb);
-  rgb = srgb_gamma(rgb);
+  // rgb = srgb_gamma(rgb);
   rgb = clamp(0.0h, 255.0h, rgb * 255.0h);
 
   out[out_idx + 0] = (uchar)(rgb.z);
