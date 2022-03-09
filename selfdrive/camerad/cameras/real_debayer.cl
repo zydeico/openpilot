@@ -65,15 +65,24 @@ float val_from_10(const uchar * source, int gx, int gy) {
   }
 
   // normalize
-  // half pv = max(0.0f, decompressed - (float)black_level) / (1048575.0f - (float)black_level);
-  float pv = max(0.0f, decompressed  / 1048575.0f);
+  float pv = max(0.0f, decompressed - (float)black_level) / (1048575.0f - (float)black_level);
+  // float pv = max(0.0f, decompressed  / 1048575.0f);
 
-  // TODO: get from histogram
-  float lower = 0.00f;
-  float upper = 0.0039f * 1; 
+  // // TODO: get from histogram
+  float lower = 0.0; 
+  // float upper = 0.00390625f; // T1
+  // float upper = 0.00390625f * 16;  // T1 + T2
+  float upper = 1.0; // T1 + T2 + T3 - 0.00390625f * 16 * 16
 
-  // Scale 
+  // // Scale 
   pv = (pv - lower) / (upper - lower);
+
+  // Test to see if it's clipping
+  // if (pv > upper) {
+  //   pv = 0;
+  // } else {
+  //   pv = (pv - lower) / (upper - lower);
+  // }
   pv = clamp(0.0f, 1.0f, pv);
 
   // correct vignetting

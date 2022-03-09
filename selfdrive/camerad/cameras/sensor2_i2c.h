@@ -38,10 +38,8 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   {0x340C, 0x802}, // 2 // 0000 0000 0010
 
   // Readout timing
-  {0x300C, 0x07B9}, // LINE_LENGTH_PCK (A)
-  {0x303E, 0x07B9}, // LINE_LENGTH_PCK (B)
-  {0x300A, 0x07E7}, // FRAME_LENGTH_LINES (A)
-  {0x30AA, 0x07E7}, // FRAME_LENGTH_LINES (B)
+  {0x300C, 0x068A}, // LINE_LENGTH_PCK (A)
+  {0x300A, 0x0522}, // FRAME_LENGTH_LINES (A)
   {0x3042, 0x0000}, // EXTRA_DELAY
 
   // Readout Settings
@@ -57,13 +55,21 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   {0x3350, 0x0311}, // MIPI_F4_VDT_VC
   {0x31B0, 0x0053}, // FRAME_PREAMBLE
   {0x31B2, 0x003B}, // LINE_PREAMBLE
-  {0x301A, 0x001C}, // RESET_REGISTER
 
   // Noise Corrections
   {0x3092, 0x0C24}, // ROW_NOISE_CONTROL
   {0x337A, 0x0C80}, // DBLC_SCALE0
   {0x3370, 0x03B1}, // DBLC
   {0x3044, 0x0400}, // DARK_CONTROL
+
+  // Other "recommended settings"
+  {0x3520, 0x1288},
+  {0x3522, 0x880C},
+  {0x3524, 0x0C12},
+  {0x352C, 0x1212},
+  {0x354A, 0x007F},
+  {0x3506, 0x3333},
+  {0x3508, 0x3333},
 
   // Enable dead pixel correction using
   // the 1D line correction scheme
@@ -72,9 +78,9 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   // HDR Settings
   {0x3082, 0x0008}, // OPERATION_MODE_CTRL (A) (enable HDR + 3 exposures)
 
-  {0x3014, 0x098E}, // FINE_INTEGRATION_TIME_ (A)
-  {0x321E, 0x098E}, // FINE_INTEGRATION_TIME2 (A)
-  {0x3222, 0x098E}, // FINE_INTEGRATION_TIME3 (A)
+  {0x3014, 0x0752}, // FINE_INTEGRATION_TIME_ (A)
+  {0x321E, 0x0752}, // FINE_INTEGRATION_TIME2 (A)
+  {0x3222, 0x0752}, // FINE_INTEGRATION_TIME3 (A)
 
   {0x31D0, 0x0001}, // COMPANDING enabled
   {0x33DA, 0x0001}, // OC_LUT_CONTROL - OC_LEGACY_COMPANDING
@@ -85,38 +91,58 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
 
   {0x3190, 0x0000}, // 
   {0x318E, 0x0200}, // PRE_HDR_GAIN_EN
-  {0x319E, 0x0000}, // s12_dlo_range?
 
   // DLO Settings
-  // {0x3100, 0x4000}, // DLO_CONTROL0
+  {0x3100, 0x4000}, // DLO_CONTROL0
 
-  {0x31A2, 0x0000}, // noise_dlo_dis_threshold
+  {0x3280, 0x0FA0}, // T1 G1
+  {0x3282, 0x0FA0}, // T1 R
+  {0x3284, 0x0FA0}, // T1 B
+  {0x3286, 0x0FA0}, // T1 G2
 
-  {0x3280, 0x0fff}, // T1 G1
-  {0x3282, 0x0fff}, // T1 R
-  {0x3284, 0x0fff}, // T1 B
-  {0x3286, 0x0fff}, // T1 G2
+  // {0x3280, 0x0000}, // T1 G1
+  // {0x3282, 0x0000}, // T1 R
+  // {0x3284, 0x0000}, // T1 B
+  // {0x3286, 0x0000}, // T1 G2
 
-  {0x3288, 0x0000}, // T2 G1
-  {0x328A, 0x0000}, // T2 R
-  {0x328C, 0x0000}, // T2 B
-  {0x328E, 0x0000}, // T2 G2
+  {0x3288, 0x0FA0}, // T2 G1
+  {0x328A, 0x0FA0}, // T2 R
+  {0x328C, 0x0FA0}, // T2 B
+  {0x328E, 0x0FA0}, // T2 G2
 
-  {0x3290, 0x0000}, // T3 G1
-  {0x3292, 0x0000}, // T3 R
-  {0x3294, 0x0000}, // T3 B
-  {0x3296, 0x0000}, // T3 G2
+  // {0x3288, 0x0000}, // T2 G1
+  // {0x328A, 0x0000}, // T2 R
+  // {0x328C, 0x0000}, // T2 B
+  // {0x328E, 0x0000}, // T2 G2
+
+  {0x3290, 0x0FA0}, // T3 G1
+  {0x3292, 0x0FA0}, // T3 R
+  {0x3294, 0x0FA0}, // T3 B
+  {0x3296, 0x0FA0}, // T3 G2
+
+  // {0x3290, 0x0000}, // T3 G1
+  // {0x3292, 0x0000}, // T3 R
+  // {0x3294, 0x0000}, // T3 B
+  // {0x3296, 0x0000}, // T3 G2
+
+  {0x3298, 0x0FA0}, // T4 G1
+  {0x329A, 0x0FA0}, // T4 R
+  {0x329C, 0x0FA0}, // T4 B
+  {0x329E, 0x0FA0}, // T4 G2
 
   // {0x3060, 0xAAAA}, // ANALOG_COLOR_GAIN
-  {0x3060, 0x3333}, // ANALOG_COLOR_GAIN
+  // {0x3060, 0x3333}, // ANALOG_COLOR_GAIN
 
   {0x305A, 0x00F8}, // red gain (A)
   {0x3058, 0x0122}, // blue gain (A)
   {0x3056, 0x009A}, // g1 gain (A)
   {0x305C, 0x009A}, // g2 gain (A)
 
-  {0x3012, 500},   // Integration time (A)
-  {0x3238, 0x0011}, // EXPOSURE_RATIO (A)
-  {0x3366, 0xF17D}, // ANALOG_GAIN (A) 0.25 - 1.0 - 4.0
+  {0x3012, 0x0163}, // Integration time (A)
+  {0x3238, 0x0044}, // EXPOSURE_RATIO (A)
+  // {0x3366, 0xFDDD}, // ANALOG_GAIN (A)
+  {0x3366, 0xA17D}, // ANALOG_GAIN (A)
   {0x3362, 0x0001}, // DC GAIN (A - T1)
+
+  {0x301A, 0x001E}, // RESET_REGISTER
 };
