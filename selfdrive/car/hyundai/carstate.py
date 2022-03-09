@@ -18,7 +18,14 @@ def get_can_parser_ev6(CP):
     ("GEAR", "ACCELERATOR"),
     ("BRAKE_PRESSED", "BRAKE"),
 
+    ("STEERING_RATE", "STEERING_SENSORS"),
     ("STEERING_ANGLE", "STEERING_SENSORS"),
+    ("STEERING_TORQUE", "STEERING_SENSORS_ALT"),
+
+    ("CRUISE_ACTIVE", "SCC1"),
+    ("SET_SPEED", "CRUISE_INFO"),
+
+    ("DISTANCE_UNIT", "CLUSTER_INFO"),
 
     ("LEFT_LAMP", "BLINKERS"),
     ("RIGHT_LAMP", "BLINKERS"),
@@ -32,6 +39,10 @@ def get_can_parser_ev6(CP):
     ("ACCELERATOR", 0),
     ("BRAKE", 0),
     ("STEERING_SENSORS", 0),
+    ("STEERING_SENSORS_ALT", 0),
+    ("SCC1", 0),
+    ("CRUISE_INFO", 0),
+    ("CLUSTER_INFO", 0),
     ("BLINKERS", 0),
     ("DOORS_SEATBELTS", 0),
   ]
@@ -60,7 +71,7 @@ class CarState(CarStateBase):
   def update_ev6(self, cp, cp_cam):
     ret = car.CarState.new_message()
 
-    ret.gas = cp.vl["ACCELERATOR"]["ACCELERATOR_PEDAL"]
+    ret.gas = cp.vl["ACCELERATOR"]["ACCELERATOR_PEDAL"] / 255.
     ret.gasPressed = ret.gas > 1e-3
     ret.brakePressed = cp.vl["BRAKE"]["BRAKE_PRESSED"] == 1
 
@@ -70,6 +81,7 @@ class CarState(CarStateBase):
     gear = cp.vl["ACCELERATOR"]["GEAR"]
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(gear))
 
+    # TODO: figure out positions
     ret.wheelSpeeds = self.get_wheel_speeds(
       cp.vl["WHEEL_SPEEDS"]["WHEEL_SPEED_1"],
       cp.vl["WHEEL_SPEEDS"]["WHEEL_SPEED_2"],
@@ -80,10 +92,20 @@ class CarState(CarStateBase):
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
     ret.standstill = ret.vEgoRaw < 0.1
 
-    ret.steeringAngleDeg = cp.vl["STEERING_SENSORS"]["STEERING_ANGLE"]
+    ret.steeringRateDeg = cp.vl["STEERING_SENSORS"]["STEERING_RATE"]
+    ret.steeringAngleDeg = cp.vl["STEERING_SENSORS"]["STEERING_ANGLE"] * -1
+    ret.steeringTorque = cp.vl["STEERING_SENSORS_ALT"]["STEERING_TORQUE"]
+    ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
 
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(50, cp.vl["BLINKERS"]["LEFT_LAMP"],
                                                                       cp.vl["BLINKERS"]["RIGHT_LAMP"])
+
+    ret.cruiseState.available = True
+    ret.cruiseState.enabled = cp.vl["SCC1"]["CRUISE_ACTIVE"] == 1
+    ret.cruiseState.standstill = False
+
+    speed_conv = CV.MPH_TO_MS if cp.vl["CLUSTER_INFO"]["DISTANCE_UNIT"] == 1 else CV.KPH_TO_MS
+    ret.cruiseState.speed = cp.vl["CRUISE_INFO"]["SET_SPEED"] * speed_conv
 
     return ret
 
