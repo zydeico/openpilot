@@ -49,11 +49,9 @@ class CarController():
   def update(self, c, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert, hud_speed,
              left_lane, right_lane, left_lane_depart, right_lane_depart):
 
-    if self.CP.carFingerprint == CAR.KIA_EV6:
-      return actuators.copy(), []
-
     # Steering Torque
-    new_steer = int(round(actuators.steer * self.p.STEER_MAX))
+    #new_steer = int(round(actuators.steer * self.p.STEER_MAX))
+    new_steer = int(round(actuators.steer * 150))
     apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.p)
     self.steer_rate_limited = new_steer != apply_steer
 
@@ -68,6 +66,27 @@ class CarController():
     sys_warning, sys_state, left_lane_warning, right_lane_warning = \
       process_hud_alert(enabled, self.CP.carFingerprint, visual_alert,
                         left_lane, right_lane, left_lane_depart, right_lane_depart)
+
+
+    if self.CP.carFingerprint == CAR.KIA_EV6:
+      ret = []
+
+      # steering control
+      values = {
+        "LDW_STATUS": 3,
+        "TORQUE_REQUEST": apply_steer,
+        "NEW_SIGNAL_1": 6,
+        "STEER_REQ": 1 if lkas_active else 0,
+        "STEER_REQ_2": 1 if lkas_active else 0,
+        "STEER_REQ_3": 1 if lkas_active else 0,
+      }
+      ret.append(self.packer.make_can_msg("LKAS", 4, values, frame % 255))
+
+      new_actuators = actuators.copy()
+      new_actuators.steer = apply_steer / self.p.STEER_MAX
+
+      return new_actuators, ret
+
 
     can_sends = []
 

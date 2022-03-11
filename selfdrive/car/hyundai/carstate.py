@@ -47,7 +47,7 @@ def get_can_parser_ev6(CP):
     ("DOORS_SEATBELTS", 0),
   ]
 
-  return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 4)
+  return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 5)
 
 
 

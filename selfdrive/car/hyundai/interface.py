@@ -227,6 +227,12 @@ class CarInterface(CarInterfaceBase):
       ret.safetyConfigs = [get_safety_config(car.CarParams.SafetyModel.noOutput),
                            get_safety_config(car.CarParams.SafetyModel.allOutput, 1)]
 
+      ret.lateralTuning.pid.kf = 0.00005
+      tire_stiffness_factor = 0.65
+      ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
+      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.25], [0.05]]
+
+
     # Genesis
     elif candidate == CAR.GENESIS_G70:
       ret.lateralTuning.init('indi')
