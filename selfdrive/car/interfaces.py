@@ -33,7 +33,6 @@ class CarInterfaceBase(ABC):
     self.steering_unpressed = 0
     self.low_speed_alert = False
     self.silent_steer_warning = True
-    self.disengage_on_gas = Params().get_bool("DisengageOnGas")
 
     if CarState is not None:
       self.CS = CarState(CP)
@@ -74,7 +73,6 @@ class CarInterfaceBase(ABC):
   def get_std_params(candidate, fingerprint):
     ret = car.CarParams.new_message()
     ret.carFingerprint = candidate
-    ret.unsafeMode = 1 if Params().get_bool("DisengageOnGas") else 0  # see panda/board/safety_declarations.h for allowed values
 
     # standard ALC params
     ret.steerControlType = car.CarParams.SteerControlType.torque
@@ -144,7 +142,6 @@ class CarInterfaceBase(ABC):
     if cs_out.parkingBrake:
       events.add(EventName.parkBrake)
 
-
     # Handle permanent and temporary steering faults
     self.steering_unpressed = 0 if cs_out.steeringPressed else self.steering_unpressed + 1
     if cs_out.steerFaultTemporary:
@@ -158,11 +155,6 @@ class CarInterfaceBase(ABC):
       self.silent_steer_warning = False
     if cs_out.steerFaultPermanent:
       events.add(EventName.steerUnavailable)
-
-    # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
-    if (self.disengage_on_gas and cs_out.gasPressed and not self.CS.out.gasPressed) or \
-       (cs_out.brakePressed and (not self.CS.out.brakePressed or not cs_out.standstill)):
-      events.add(EventName.pedalPressed)
 
     # we engage when pcm is active (rising edge)
     if pcm_enable:
