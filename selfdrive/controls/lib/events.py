@@ -357,6 +357,14 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
   # ********** events only containing alerts that display while engaged **********
 
   EventName.gasPressed: {
+    ET.WARNING: Alert(
+      "Car Will Not Brake While Gas Is Pressed",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .1),
+  },
+
+  EventName.gasPressedPreEnable: {
     ET.PRE_ENABLE: Alert(
       "Car Will Not Brake While Gas Pressed",
       "",

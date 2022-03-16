@@ -197,9 +197,15 @@ class Controls:
       self.events.add(EventName.controlsInitializing)
       return
 
+    if CS.gasPressed:
+      if self.disengage_on_gas:
+        self.events.add(EventName.gasPressedPreEnable)
+      else:
+        self.events.add(EventName.gasPressed)
+
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0
     if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_gas) or \
-      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
+       (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
       self.events.add(EventName.pedalPressed)
 
     self.events.add_from_msg(CS.events)
@@ -493,7 +499,7 @@ class Controls:
     # Check which actuators can be enabled
     CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                      CS.vEgo > self.CP.minSteerSpeed and not CS.standstill
-    CC.longActive = self.active
+    CC.longActive = self.active and not CS.gasPressed
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
