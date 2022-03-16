@@ -96,7 +96,7 @@ class Controls:
     self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'])
 
     # see panda/board/safety_declarations.h for allowed values
-    self.CP.unsafeMode = 1 if Params().get_bool("DisengageOnGas") else 0
+    self.CP.unsafeMode = 0 if Params().get_bool("DisengageOnGas") else 1
 
     # read params
     self.is_metric = params.get_bool("IsMetric")
