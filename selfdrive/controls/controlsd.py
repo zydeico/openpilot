@@ -198,10 +198,7 @@ class Controls:
       return
 
     if CS.gasPressed:
-      if self.disengage_on_gas:
-        self.events.add(EventName.gasPressedPreEnable)
-      else:
-        self.events.add(EventName.gasPressed)
+      self.events.add(EventName.gasPressedPreEnable if self.disengage_on_gas else EventName.gasPressed)
 
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0
     if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_gas) or \
