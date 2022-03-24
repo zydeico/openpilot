@@ -97,7 +97,7 @@ class Controls:
 
     # see panda/board/safety_declarations.h for allowed values
     self.disengage_on_gas = Params().get_bool("DisengageOnGas")
-    self.CP.unsafeMode = 1 if not self.disengage_on_gas else 0
+    self.CP.alternativeExperience = 1 if not self.disengage_on_gas else 0
 
     # read params
     self.is_metric = params.get_bool("IsMetric")
@@ -266,7 +266,7 @@ class Controls:
       if i < len(self.CP.safetyConfigs):
         safety_mismatch = pandaState.safetyModel != self.CP.safetyConfigs[i].safetyModel or \
                           pandaState.safetyParam != self.CP.safetyConfigs[i].safetyParam or \
-                          pandaState.unsafeMode != self.CP.unsafeMode
+                          pandaState.alternativeExperience != self.CP.alternativeExperience
       else:
         safety_mismatch = pandaState.safetyModel not in IGNORED_SAFETY_MODES
 
