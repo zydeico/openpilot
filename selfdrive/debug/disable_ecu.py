@@ -15,11 +15,11 @@ def disable_ecu(ecu_addr, logcan, sendcan, bus, timeout=0.5, retry=5, debug=Fals
   for i in range(retry):
     try:
       # enter extended diagnostic session
-      query = IsoTpParallelQuery(sendcan, logcan, bus, [ecu_addr], [EXT_DIAG_REQUEST], [EXT_DIAG_RESPONSE], debug=debug)
+      query = IsoTpParallelQuery(sendcan, logcan, [bus], [ecu_addr], [EXT_DIAG_REQUEST], [EXT_DIAG_RESPONSE], debug=debug)
       for addr, dat in query.get_data(timeout).items(): # pylint: disable=unused-variable
         print("ecu communication control disable tx/rx ...")
         # communication control disable tx and rx
-        query = IsoTpParallelQuery(sendcan, logcan, bus, [ecu_addr], [COM_CONT_REQUEST], [COM_CONT_RESPONSE], debug=debug)
+        query = IsoTpParallelQuery(sendcan, logcan, [bus], [ecu_addr], [COM_CONT_REQUEST], [COM_CONT_RESPONSE], debug=debug)
         query.get_data(0)
         return True
       print(f"ecu disable retry ({i+1}) ...")

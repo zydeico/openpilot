@@ -93,8 +93,8 @@ def fingerprint(logcan, sendcan):
   skip_fw_query = os.environ.get('SKIP_FW_QUERY', False)
 
   if not fixed_fingerprint and not skip_fw_query:
-    # Vin query only reliably works thorugh OBDII
-    bus = 1
+    # VIN query only reliably works thorugh OBDII
+    query_buses = (1, )
 
     cached_params = Params().get("CarParamsCache")
     if cached_params is not None:
@@ -108,8 +108,8 @@ def fingerprint(logcan, sendcan):
       car_fw = list(cached_params.carFw)
     else:
       cloudlog.warning("Getting VIN & FW versions")
-      _, vin = get_vin(logcan, sendcan, bus)
-      car_fw = get_fw_versions(logcan, sendcan, bus)
+      _, vin = get_vin(logcan, sendcan, query_buses)
+      car_fw = get_fw_versions(logcan, sendcan, query_buses)
 
     exact_fw_match, fw_candidates = match_fw_to_car(car_fw)
   else:

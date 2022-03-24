@@ -286,7 +286,7 @@ def match_fw_to_car(fw_versions, allow_fuzzy=True):
   return exact_match, matches
 
 
-def get_fw_versions(logcan, sendcan, bus, extra=None, timeout=0.1, debug=False, progress=False):
+def get_fw_versions(logcan, sendcan, buses, extra=None, timeout=0.1, debug=False, progress=False):
   ecu_types = {}
 
   # Extract ECU addresses to query from fingerprints
@@ -322,7 +322,7 @@ def get_fw_versions(logcan, sendcan, bus, extra=None, timeout=0.1, debug=False, 
           addrs = [(a, s) for (b, a, s) in addr_chunk if b in (brand, 'any')]
 
           if addrs:
-            query = IsoTpParallelQuery(sendcan, logcan, bus, addrs, request, response, response_offset, debug=debug)
+            query = IsoTpParallelQuery(sendcan, logcan, buses, addrs, request, response, response_offset, debug=debug)
             t = 2 * timeout if i == 0 else timeout
             fw_versions.update(query.get_data(t))
         except Exception:
