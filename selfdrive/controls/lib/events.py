@@ -365,14 +365,6 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
       Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .1, creation_delay=1.),
   },
 
-  EventName.gasPressed: {
-    ET.OVERRIDE: Alert(
-      "",
-      "",
-      AlertStatus.override, AlertSize.none,
-      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .1),
-  },
-
   # openpilot tries to learn certain parameters about your car by observing
   # how the car behaves to steering inputs from both human and openpilot driving.
   # This includes:
