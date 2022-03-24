@@ -358,18 +358,10 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
 
   EventName.gasPressed: {
     ET.WARNING: Alert(
-      "Car Will Not Brake While Gas Is Pressed",
-      "",
-      AlertStatus.normal, AlertSize.small,
-      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .1),
-  },
-
-  EventName.gasPressedPreEnable: {
-    ET.PRE_ENABLE: Alert(
       "Release Gas Pedal to Engage",
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .1, creation_delay=1.),
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .1),
   },
 
   # openpilot tries to learn certain parameters about your car by observing
