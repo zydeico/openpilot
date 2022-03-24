@@ -431,7 +431,7 @@ class Controls:
             self.soft_disable_timer = int(SOFT_DISABLE_TIME / DT_CTRL)
             self.current_alert_types.append(ET.SOFT_DISABLE)
 
-          elif self.events.any(ET.OVERRIDING):
+          elif self.events.any(ET.OVERRIDE):
             self.state = State.overriding
 
         # SOFT DISABLING
