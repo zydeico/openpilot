@@ -195,7 +195,7 @@ class Controls:
       return
 
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0
-    if (CS.gasPressed and not self.CS_prev.gasPressed) or \
+    if () or \
       (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
       self.events.add(EventName.pedalPressed)
 
@@ -264,8 +264,8 @@ class Controls:
       else:
         safety_mismatch = pandaState.safetyModel not in IGNORED_SAFETY_MODES
 
-      if safety_mismatch or self.mismatch_counter >= 200:
-        self.events.add(EventName.controlsMismatch)
+      # if safety_mismatch or self.mismatch_counter >= 200:
+      #   self.events.add(EventName.controlsMismatch)
 
       if log.PandaState.FaultType.relayMalfunction in pandaState.faults:
         self.events.add(EventName.relayMalfunction)
@@ -449,6 +449,13 @@ class Controls:
             self.state = State.enabled
           else:
             self.current_alert_types.append(ET.PRE_ENABLE)
+            # self.current_alert_types.append(ET.OVERRIDE)
+
+        elif self.state == State.overriding:
+          if not self.events.any(ET.OVERRIDE):
+            self.state = State.enabled
+          else:
+            self.current_alert_types.append(ET.OVERRIDE)
 
     # DISABLED
     elif self.state == State.disabled:
@@ -459,11 +466,15 @@ class Controls:
         else:
           if self.events.any(ET.PRE_ENABLE):
             self.state = State.preEnabled
+          elif self.events.any(ET.OVERRIDE):
+            self.state = State.overriding
           else:
             self.state = State.enabled
           self.current_alert_types.append(ET.ENABLE)
           if not self.CP.pcmCruise:
             self.v_cruise_kph = initialize_v_cruise(CS.vEgo, CS.buttonEvents, self.v_cruise_kph_last)
+
+    print(self.state)
 
     # Check if actuators are enabled
     self.active = self.state in (State.enabled, State.softDisabling)
@@ -652,6 +663,7 @@ class Controls:
       controlsState.alertText2 = current_alert.alert_text_2
       controlsState.alertSize = current_alert.alert_size
       controlsState.alertStatus = current_alert.alert_status
+      # print(current_alert)
       controlsState.alertBlinkingRate = current_alert.alert_rate
       controlsState.alertType = current_alert.alert_type
       controlsState.alertSound = current_alert.audible_alert

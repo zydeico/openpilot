@@ -30,6 +30,7 @@ class Priority(IntEnum):
 class ET:
   ENABLE = 'enable'
   PRE_ENABLE = 'preEnable'
+  OVERRIDE = 'override'
   NO_ENTRY = 'noEntry'
   WARNING = 'warning'
   USER_DISABLE = 'userDisable'
@@ -186,7 +187,7 @@ class StartupAlert(Alert):
   def __init__(self, alert_text_1: str, alert_text_2: str = "Always keep hands on wheel and eyes on road", alert_status=AlertStatus.normal):
     super().__init__(alert_text_1, alert_text_2,
                      alert_status, AlertSize.mid,
-                     Priority.LOWER, VisualAlert.none, AudibleAlert.none, 10.),
+                     Priority.LOWER, VisualAlert.none, AudibleAlert.none, .1),
 
 
 # ********** helper functions **********
@@ -356,12 +357,20 @@ EVENTS: Dict[int, Dict[str, Union[Alert, AlertCallbackType]]] = {
 
   # ********** events only containing alerts that display while engaged **********
 
-  EventName.gasPressed: {
+  EventName.gasPressedPreEnable: {
     ET.PRE_ENABLE: Alert(
       "Release Gas Pedal to Engage",
       "",
-      AlertStatus.normal, AlertSize.small,
+      AlertStatus.override, AlertSize.small,
       Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .1, creation_delay=1.),
+  },
+
+  EventName.gasPressed: {
+    ET.OVERRIDE: Alert(
+      "",
+      "",
+      AlertStatus.override, AlertSize.none,
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .1),
   },
 
   # openpilot tries to learn certain parameters about your car by observing
