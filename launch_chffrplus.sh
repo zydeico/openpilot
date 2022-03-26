@@ -139,7 +139,7 @@ function launch {
 
   if [ -f "${BASEDIR}/.overlay_init" ]; then
     find ${BASEDIR}/.git -newer ${BASEDIR}/.overlay_init | grep -q '.' 2> /dev/null
-    if [ $? -eq 0 ]; then
+    if [ $? -eq 0 ] || [ ! -z "${NO_UPDATE}" ]; then
       echo "${BASEDIR} has been modified, skipping overlay update installation"
     else
       if [ -f "${STAGING_ROOT}/finalized/.overlay_consistent" ]; then
