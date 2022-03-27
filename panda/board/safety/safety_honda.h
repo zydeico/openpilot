@@ -55,6 +55,14 @@ const uint16_t HONDA_PARAM_ALT_BRAKE = 1;
 const uint16_t HONDA_PARAM_BOSCH_LONG = 2;
 const uint16_t HONDA_PARAM_NIDEC_ALT = 4;
 
+enum {
+  HONDA_BTN_NONE = 0,
+  HONDA_BTN_MAIN = 1,
+  HONDA_BTN_CANCEL = 2,
+  HONDA_BTN_SET = 3,
+  HONDA_BTN_RESUME = 4,
+};
+
 int honda_brake = 0;
 bool honda_brake_switch_prev = false;
 bool honda_alt_brake_msg = false;
@@ -96,9 +104,8 @@ static int honda_rx_hook(CANPacket_t *to_push) {
   bool valid = addr_safety_check(to_push, &honda_rx_checks,
                                  honda_get_checksum, honda_compute_checksum, honda_get_counter);
 
-  // TODO: add back Honda Nidec once we handle it properly in openpilot
-  //const bool pcm_cruise = ((honda_hw == HONDA_BOSCH) && !honda_bosch_long) || ((honda_hw == HONDA_NIDEC) && !gas_interceptor_detected);
-  const bool pcm_cruise = ((honda_hw == HONDA_BOSCH) && !honda_bosch_long);
+  const bool pcm_cruise = ((honda_hw == HONDA_BOSCH) && !honda_bosch_long) || \
+                          ((honda_hw == HONDA_NIDEC) && !gas_interceptor_detected);
 
   if (valid) {
     int addr = GET_ADDR(to_push);
@@ -123,34 +130,36 @@ static int honda_rx_hook(CANPacket_t *to_push) {
     // enter controls when PCM enters cruise state
     if (pcm_cruise && (addr == 0x17C)) {
       const bool cruise_engaged = GET_BIT(to_push, 38U) != 0U;
-      if (!cruise_engaged) {
-        controls_allowed = 0;
-      }
+      // engage on rising edge
       if (cruise_engaged && !cruise_engaged_prev) {
         controls_allowed = 1;
+      }
+
+      // Since some Nidec cars can brake down to 0 after the PCM disengages,
+      // we don't disengage when the PCM does.
+      if (!cruise_engaged && (honda_hw != HONDA_NIDEC)) {
+        controls_allowed = 0;
       }
       cruise_engaged_prev = cruise_engaged;
     }
 
     // state machine to enter and exit controls for button enabling
     // 0x1A6 for the ILX, 0x296 for the Civic Touring
-    if (!pcm_cruise && ((addr == 0x1A6) || (addr == 0x296))) {
-      // check for button presses
+    if (((addr == 0x1A6) || (addr == 0x296))) {
       int button = (GET_BYTE(to_push, 0) & 0xE0U) >> 5;
-      switch (button) {
-        case 1:  // main
-        case 2:  // cancel
-          controls_allowed = 0;
-          break;
-        case 3:  // set
-        case 4:  // resume
-          if (acc_main_on) {
-            controls_allowed = 1;
-          }
-          break;
-        default:
-          break; // any other button is irrelevant
+
+      // exit controls once main or cancel are pressed
+      if ((button == HONDA_BTN_MAIN) || (button == HONDA_BTN_CANCEL)) {
+        controls_allowed = 0;
       }
+
+      // enter controls on the falling edge of set or resume
+      bool set = (button == HONDA_BTN_NONE) && (cruise_button_prev == HONDA_BTN_SET);
+      bool res = (button == HONDA_BTN_NONE) && (cruise_button_prev == HONDA_BTN_RESUME);
+      if (acc_main_on && !pcm_cruise && (set || res)) {
+        controls_allowed = 1;
+      }
+      cruise_button_prev = button;
     }
 
     // user brake signal on 0x17C reports applied brake from computer brake on accord
@@ -186,8 +195,8 @@ static int honda_rx_hook(CANPacket_t *to_push) {
       }
     }
 
-    // disable stock Honda AEB in unsafe mode
-    if (!(unsafe_mode & UNSAFE_DISABLE_STOCK_AEB)) {
+    // disable stock Honda AEB in alternative experience
+    if (!(alternative_experience & ALT_EXP_DISABLE_STOCK_AEB)) {
       if ((bus == 2) && (addr == 0x1FA)) {
         bool honda_stock_aeb = GET_BYTE(to_push, 3) & 0x20U;
         int honda_stock_brake = (GET_BYTE(to_push, 0) << 2) + ((GET_BYTE(to_push, 1) >> 6) & 0x3U);
@@ -251,8 +260,8 @@ static int honda_tx_hook(CANPacket_t *to_send) {
   // disallow actuator commands if gas or brake (with vehicle moving) are pressed
   // and the the latching controls_allowed flag is True
   int pedal_pressed = brake_pressed_prev && vehicle_moving;
-  bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
-  if (!unsafe_allow_gas) {
+  bool alt_exp_allow_gas = alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS;
+  if (!alt_exp_allow_gas) {
     pedal_pressed = pedal_pressed || gas_pressed_prev;
   }
   bool current_controls_allowed = controls_allowed && !(pedal_pressed);
